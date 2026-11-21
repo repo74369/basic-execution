@@ -1,0 +1,88 @@
+[gd_scene format=3 uid="uid://c0fxxxyq7mdw1"]
+
+[ext_resource type="Script" uid="uid://dox0mq4nbf7cn" path="res://framework/player/fps_player.gd" id="1_ldm3q"]
+[ext_resource type="Script" uid="uid://bug245t8mq4rf" path="res://framework/player/player_components/player_info.gd" id="2_bjjt8"]
+[ext_resource type="Script" uid="uid://csvq3t1wexogd" path="res://framework/player/player_components/movement_controller.gd" id="2_p1q0c"]
+[ext_resource type="Script" uid="uid://byikpmfxsnx7" path="res://framework/player/player_components/look_controller.gd" id="4_3ynlm"]
+[ext_resource type="Script" uid="uid://bw50ejwjinpgr" path="res://framework/player/player_components/movement_states/state_ground_movement.gd" id="4_puj0l"]
+[ext_resource type="Script" uid="uid://dmwp32uk5d6hp" path="res://framework/player/player_components/movement_states/sub_state_walk.gd" id="5_bjjt8"]
+[ext_resource type="Script" uid="uid://kvdb7q3n235y" path="res://framework/player/player_components/movement_states/sub_state_crouch.gd" id="6_86omr"]
+[ext_resource type="Script" uid="uid://dpto1sgqyrqk4" path="res://framework/player/player_components/movement_states/sub_state_sprint.gd" id="7_pxqg2"]
+[ext_resource type="Script" uid="uid://bqlhkjdqobs2q" path="res://framework/player/player_components/movement_states/sate_air_movement.gd" id="7_ysie7"]
+[ext_resource type="Script" uid="uid://de6khqk8nt53v" path="res://framework/player/player_components/movement_states/state_slide.gd" id="9_86omr"]
+[ext_resource type="Script" uid="uid://dgqbiu1g4apia" path="res://framework/player/player_components/camera_effects_component.gd" id="10_86omr"]
+
+[sub_resource type="Resource" id="Resource_dmsdt"]
+script = ExtResource("2_bjjt8")
+metadata/_custom_type_script = "uid://bug245t8mq4rf"
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_dmsdt"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_fssru"]
+height = 1.0
+
+[node name="FpsPlayer" type="CharacterBody3D" unique_id=39062709 node_paths=PackedStringArray("movement_controller", "look_controller", "player_neck", "player_camera", "crouch_collider", "standing_collider")]
+script = ExtResource("1_ldm3q")
+player_info = SubResource("Resource_dmsdt")
+movement_controller = NodePath("MovementController")
+look_controller = NodePath("LookController")
+player_neck = NodePath("PlayerNeck")
+player_camera = NodePath("PlayerNeck/CameraEffectHinge/Camera3D")
+crouch_collider = NodePath("CrouchingCollider")
+standing_collider = NodePath("StandingCollider")
+
+[node name="StandingCollider" type="CollisionShape3D" parent="." unique_id=1736762686]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_dmsdt")
+
+[node name="CrouchingCollider" type="CollisionShape3D" parent="." unique_id=2106928213]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("CapsuleShape3D_fssru")
+disabled = true
+
+[node name="MovementController" type="Node" parent="." unique_id=799327635]
+script = ExtResource("2_p1q0c")
+metadata/_custom_type_script = "uid://csvq3t1wexogd"
+
+[node name="GroundMovementState" type="Node" parent="MovementController" unique_id=1708347589]
+script = ExtResource("4_puj0l")
+metadata/_custom_type_script = "uid://bw50ejwjinpgr"
+
+[node name="WalkSubState" type="Node" parent="MovementController/GroundMovementState" unique_id=87279015]
+script = ExtResource("5_bjjt8")
+metadata/_custom_type_script = "uid://dmwp32uk5d6hp"
+
+[node name="CrouchSubState" type="Node" parent="MovementController/GroundMovementState" unique_id=1781767203]
+script = ExtResource("6_86omr")
+priority = 1
+metadata/_custom_type_script = "uid://kvdb7q3n235y"
+
+[node name="SprintSubState" type="Node" parent="MovementController/GroundMovementState" unique_id=760118339]
+script = ExtResource("7_pxqg2")
+priority = 2
+metadata/_custom_type_script = "uid://dpto1sgqyrqk4"
+
+[node name="AirMovementState" type="Node" parent="MovementController" unique_id=723293300]
+script = ExtResource("7_ysie7")
+priority = 10
+metadata/_custom_type_script = "uid://bqlhkjdqobs2q"
+
+[node name="SlideMovementState" type="Node" parent="MovementController" unique_id=1922328582]
+script = ExtResource("9_86omr")
+priority = 20
+
+[node name="LookController" type="Node" parent="." unique_id=1617791829]
+script = ExtResource("4_3ynlm")
+metadata/_custom_type_script = "uid://byikpmfxsnx7"
+
+[node name="PlayerNeck" type="Node3D" parent="." unique_id=929357952]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.65, -0.198)
+
+[node name="CameraEffectHinge" type="Node3D" parent="PlayerNeck" unique_id=825338450]
+
+[node name="Camera3D" type="Camera3D" parent="PlayerNeck/CameraEffectHinge" unique_id=1492223866]
+
+[node name="CameraEffectsComponent" type="Node" parent="." unique_id=650309501 node_paths=PackedStringArray("effects_hinge")]
+script = ExtResource("10_86omr")
+effects_hinge = NodePath("../PlayerNeck/CameraEffectHinge")
+metadata/_custom_type_script = "uid://dgqbiu1g4apia"

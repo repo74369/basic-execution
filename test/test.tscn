@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://j10scxxhkffc"]
+
+[ext_resource type="PackedScene" uid="uid://d1b68ao2el7dy" path="res://assets/level/test.glb" id="1_syuel"]
+[ext_resource type="PackedScene" uid="uid://c0fxxxyq7mdw1" path="res://framework/player/fps_player.tscn" id="2_8a8pi"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_8a8pi"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_65205"]
+sky_material = SubResource("ProceduralSkyMaterial_8a8pi")
+
+[sub_resource type="Environment" id="Environment_hrq6i"]
+background_mode = 2
+sky = SubResource("Sky_65205")
+glow_enabled = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_dmsdt"]
+size = Vector3(2, 0.5, 2)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_8a8pi"]
+points = PackedVector3Array(-1, -0.25, -1, -1, 0.25, -1, 1, -0.25, -1, -1, -0.25, 1, -1, 0.25, 1, 1, 0.25, -1, 1, -0.25, 1, 1, 0.25, 1)
+
+[node name="test" unique_id=522572143 instance=ExtResource("1_syuel")]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." index="0" unique_id=1803748259]
+environment = SubResource("Environment_hrq6i")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." index="1" unique_id=331780318]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+shadow_enabled = true
+
+[node name="FpsPlayer" parent="." index="11" unique_id=39062709 instance=ExtResource("2_8a8pi")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40.982826, 10.508553, 4.307556)
+standing_eye_height = 1.6
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." index="12" unique_id=1933747552]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.153, 2.5, 0)
+mesh = SubResource("BoxMesh_dmsdt")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D" index="0" unique_id=370232155]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D" index="0" unique_id=1883965617]
+shape = SubResource("ConvexPolygonShape3D_8a8pi")
