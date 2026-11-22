@@ -84,3 +84,4 @@ func _update_player_context() -> void:
 	player_info.is_on_ceiling = player_character.is_on_ceiling()
 	player_info.floor_normal  = player_character.get_floor_normal()
 	player_info.current_speed = player_character.velocity.length()
+	

@@ -4,7 +4,7 @@ extends MovementState
 @export var air_control:float = 2
 @export var air_control_speed: float = 5
 @export var double_jump_thrust_force:float = 10.0
-@export var custom_double_jump_speed:float = 8.0
+@export var custom_double_jump_speed:float = 10.0
 
 var _air_time: float = 0
 

@@ -17,4 +17,3 @@ static func character_accelerate_toward(character:CharacterBody3D, target_veloci
     if diff_length > 0:
         var accel = diff.normalized() * min(diff_length / delta, accel_rate)
         character.velocity += accel * delta
-        
