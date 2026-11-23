@@ -14,8 +14,8 @@ enum ParkourAction {NONE,VAULT,CLIMB}
 @export_flags_3d_physics var collision_layers_to_check:int = 1
 
 @export_category("Vault and Malt Parameters")
-@export var vault_distance:float = 2.0
-@export var vault_detection_distance:float = 0.8
+@export var vault_distance:float = 0.5
+@export var vault_detection_distance:float = 0.5
 @export var max_height_of_obstacle_to_vault:float = 1.7
 @export var min_depth_for_malt:float = 1.0
 @export var vault_boost: float = 0.0
@@ -27,9 +27,9 @@ enum ParkourAction {NONE,VAULT,CLIMB}
 @export var ledge_detection_distance: float = 0.5
 
 @export_category("Durations")
-@export var vault_time: float = 0.32
+@export var vault_time: float = 0.125
 @export var mantle_time: float = 0.28
-@export var climb_time: float = 0.55
+@export var climb_time: float = 1.0
 
 var _current_action: ParkourAction = ParkourAction.NONE
 var _is_executing: bool = false
@@ -83,7 +83,7 @@ func _get_vault_and_malt_query_results() -> void:
 
 	# Vault & Malt  Wall Detection forward from player half height
 	var fwd_ray_from: Vector3 = origin + Vector3.UP * (player_height/2)
-	var fwd_ray_to: Vector3 = fwd_ray_from + forward * vault_detection_distance
+	var fwd_ray_to: Vector3 = fwd_ray_from + forward * (vault_detection_distance + player_width)
 	var fwd_ray_query_parameter = PhysicsRayQueryParameters3D.create(fwd_ray_from, fwd_ray_to,collision_layers_to_check,[player_character.get_rid()])
 	var fwd_result: Dictionary = space.intersect_ray(fwd_ray_query_parameter)
 	if fwd_result.is_empty():
@@ -137,33 +137,39 @@ func _get_ledge_climb_query_results() -> void:
 
 	# Ledge Climb Detection Ray
 	var fwd_ray_from: Vector3 = origin + Vector3.UP * player_height
-	var fwd_ray_to: Vector3 = fwd_ray_from + forward * ledge_detection_distance
+	var fwd_ray_to: Vector3 = fwd_ray_from + forward * (ledge_detection_distance + player_width)
 	var fwd_ray_query_parameter = PhysicsRayQueryParameters3D.create(fwd_ray_from, fwd_ray_to,collision_layers_to_check,[player_character.get_rid()])
 	var fwd_result: Dictionary = space.intersect_ray(fwd_ray_query_parameter)
 	if fwd_result.is_empty():
 		_climb_query_result["ledge_detected"] = false
+		_climb_query_result["ledge_top_point_at_contact"] = Vector3.ZERO
+		_climb_query_result["landing_position"] = Vector3.ZERO
 		return
 	else:
 		_climb_query_result["ledge_detected"] = true
 	
-	# Ray down from player height + ledge_contact_point to the detected wall height postion
-	var ledge_top_ray_from: Vector3 = fwd_result["position"] + Vector3.UP * player_height
-	var ledge_top_ray_to: Vector3 =  fwd_result["position"] - (0.01 * Vector3.UP) # Add a small buffer to prevent ray casting errors
+	# Ray down from above the wall to find the ledge top edge (nudged 5cm into the obstacle)
+	var nudge: Vector3 = forward * 0.05
+	var ledge_top_ray_from: Vector3 = fwd_result["position"] + nudge + Vector3.UP * max_climb_height
+	var ledge_top_ray_to: Vector3 = fwd_result["position"] + nudge - Vector3.UP * 0.5
 	var ledge_top_ray_query_parameter = PhysicsRayQueryParameters3D.create(ledge_top_ray_from, ledge_top_ray_to,collision_layers_to_check,[player_character.get_rid()])
 	var ledge_top_result: Dictionary = space.intersect_ray(ledge_top_ray_query_parameter)
 	if ledge_top_result.is_empty():
-		_climb_query_result["ledge_top_point_at_contact"] = Vector3.ZERO
+		_climb_query_result["ledge_top_point_at_contact"] = fwd_result["position"] + Vector3.UP * 0.2
 	else:
 		_climb_query_result["ledge_top_point_at_contact"] = ledge_top_result["position"]
-	
-	# Landing position detection
-	# Ray down from player height (ledge_surface + player_height) to ledge surface at offset of player width
-	var landing_ray_from:Vector3 = fwd_result["position"] + Vector3.UP * player_height + forward * player_width
-	var landing_ray_to:Vector3 = landing_ray_from - Vector3.UP * (player_height + 0.01)
+
+	var ledge_surface_y: float = _climb_query_result["ledge_top_point_at_contact"].y
+
+	# Landing position detection: 0.4m into the ledge, casting down through the ledge surface
+	var landing_depth: float = 0.4
+	var landing_ray_from: Vector3 = fwd_result["position"] + forward * landing_depth
+	landing_ray_from.y = ledge_surface_y + 1.0
+	var landing_ray_to: Vector3 = landing_ray_from - Vector3.UP * 1.5
 	var landing_ray_query_parameter = PhysicsRayQueryParameters3D.create(landing_ray_from, landing_ray_to,collision_layers_to_check,[player_character.get_rid()])
 	var landing_result: Dictionary = space.intersect_ray(landing_ray_query_parameter)
 	if landing_result.is_empty():
-		_climb_query_result["landing_position"] = Vector3.ZERO
+		_climb_query_result["landing_position"] = Vector3(landing_ray_from.x, ledge_surface_y, landing_ray_from.z)
 	else:
 		_climb_query_result["landing_position"] = landing_result["position"]
 
@@ -174,7 +180,7 @@ func _check_which_action_can_be_performed(vault_query_result:Dictionary, climb_q
 		# check if there is any obstacle for climbing
 		# Test move character by first lifting the character to landing height and translating to landing position
 		var start_transform = player_character.global_transform 
-		start_transform.origin.y += climb_query_result["landing_position"].y + 0.01 # small buffer of 0.01
+		start_transform.origin.y = climb_query_result["landing_position"].y + 0.01 # small buffer of 0.01
 		var motion:Vector3 = climb_query_result["landing_position"] - start_transform.origin
 		if not player_character.test_move(start_transform,motion):
 			return ParkourAction.CLIMB
@@ -205,9 +211,9 @@ func _perfrom_vault_or_malt(player_info:PlayerInfo) -> void:
 	var tween := player_character.create_tween().set_parallel(false)
 	var cam_tween := player_character.create_tween().set_parallel(false)
 	var base_neck_y := player_character.player_neck.position.y
-	tween.tween_property(player_character, "global_position", peak_position, vault_time * 0.45)\
-		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tween.tween_property(player_character, "global_position", landing_position, vault_time * 0.55)\
+	# tween.tween_property(player_character, "global_position", peak_position, vault_time)\
+	# 	.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(player_character, "global_position", landing_position, vault_time)\
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	# Quick dip
 	cam_tween.tween_property(player_character.player_neck, "position:y", base_neck_y - 0.1, vault_time * 0.3)
