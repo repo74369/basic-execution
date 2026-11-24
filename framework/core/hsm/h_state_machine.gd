@@ -20,6 +20,7 @@ func _init_states(context: Resource) -> void:
 		# Sub-states wait until their parent state's enter() is called.
 		_transition_to(_states.back(), context)
 
+
 ## Run physics tick: evaluate transitions, then delegate physics update to active state.
 func physics_update(delta: float, context: Resource) -> void:
 	_try_transition(context)

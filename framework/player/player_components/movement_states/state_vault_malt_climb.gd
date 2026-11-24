@@ -1,23 +1,23 @@
 class_name VaultMaltAndClimbState
 extends MovementState
 
-enum ParkourAction {NONE,VAULT,CLIMB}
+enum ParkourAction {NONE, VAULT, CLIMB}
 
 @export_category("Toggle Options")
-@export var enable_vault_malt:bool = true
-@export var enable_ledge_climb:bool = true
-@export var use_impulse_vault:bool = true # Set true to test Minecraft-style impulse vault!
+@export var enable_vault_malt: bool = true
+@export var enable_ledge_climb: bool = true
+@export var use_impulse_vault: bool = true # Set true to test Minecraft-style impulse vault!
 
 
 @export_category("Common Parameters")
-@export var player_height:float = 1.9
-@export_flags_3d_physics var collision_layers_to_check:int = 1
+@export var player_height: float = 1.9
+@export_flags_3d_physics var collision_layers_to_check: int = 1
 
 @export_category("Vault and Malt Parameters")
-@export var vault_distance:float = 0.5
-@export var vault_detection_distance:float = 0.5
-@export var max_height_of_obstacle_to_vault:float = 1.7
-@export var min_depth_for_malt:float = 1.0
+@export var vault_distance: float = 0.5
+@export var vault_detection_distance: float = 0.5
+@export var max_height_of_obstacle_to_vault: float = 1.7
+@export var min_depth_for_malt: float = 1.0
 @export var vault_boost: float = 0.0
 @export var vault_upward_boost: float = 0.0
 
@@ -33,18 +33,18 @@ enum ParkourAction {NONE,VAULT,CLIMB}
 
 var _current_action: ParkourAction = ParkourAction.NONE
 var _is_executing: bool = false
-var _vault_query_result:Dictionary = {
-	"obstacle_detected":false,
-	"obstacle_position_at_contact":Vector3.ZERO,
-	"obstacle_top_position_at_contact":Vector3.ZERO,
-	"obstacle_top_position_at_malt_depth":Vector3.ZERO,
-	"landing_position":Vector3.ZERO,
+var _vault_query_result: Dictionary = {
+	"obstacle_detected": false,
+	"obstacle_position_at_contact": Vector3.ZERO,
+	"obstacle_top_position_at_contact": Vector3.ZERO,
+	"obstacle_top_position_at_malt_depth": Vector3.ZERO,
+	"landing_position": Vector3.ZERO,
 }
-var _climb_query_result:Dictionary = {
-	"ledge_detected":false,
-	"ledge_top_point_at_contact":Vector3.ZERO,
-	"landing_position":Vector3.ZERO,
-	"is_landing_zone_available":false,
+var _climb_query_result: Dictionary = {
+	"ledge_detected": false,
+	"ledge_top_point_at_contact": Vector3.ZERO,
+	"landing_position": Vector3.ZERO,
+	"is_landing_zone_available": false,
 }
 
 func _can_enter(_player_info: PlayerInfo) -> bool:
@@ -52,7 +52,7 @@ func _can_enter(_player_info: PlayerInfo) -> bool:
 	_get_ledge_climb_query_results()
 	DebugConsole.watch("Vault Query Result", _vault_query_result)
 	DebugConsole.watch("Ledge Query Result", _climb_query_result)
-	_current_action = _check_which_action_can_be_performed(_vault_query_result,_climb_query_result)
+	_current_action = _check_which_action_can_be_performed(_vault_query_result, _climb_query_result)
 	return _current_action != ParkourAction.NONE and Input.is_action_just_pressed("jump")
 
 func _can_exit(_player_info: PlayerInfo) -> bool:
@@ -76,15 +76,17 @@ func _physics_update(delta: float, player_info: PlayerInfo) -> void:
 func _get_vault_and_malt_query_results() -> void:
 	if not enable_vault_malt:
 		return
+	if not player_character:
+		return
 
 	var space := player_character.get_world_3d().direct_space_state
 	var forward := -player_character.global_transform.basis.z.normalized()
 	var origin := player_character.global_position
 
 	# Vault & Malt  Wall Detection forward from player half height
-	var fwd_ray_from: Vector3 = origin + Vector3.UP * (player_height/2)
+	var fwd_ray_from: Vector3 = origin + Vector3.UP * (player_height / 2)
 	var fwd_ray_to: Vector3 = fwd_ray_from + forward * (vault_detection_distance + player_width)
-	var fwd_ray_query_parameter = PhysicsRayQueryParameters3D.create(fwd_ray_from, fwd_ray_to,collision_layers_to_check,[player_character.get_rid()])
+	var fwd_ray_query_parameter = PhysicsRayQueryParameters3D.create(fwd_ray_from, fwd_ray_to, collision_layers_to_check, [player_character.get_rid()])
 	var fwd_result: Dictionary = space.intersect_ray(fwd_ray_query_parameter)
 	if fwd_result.is_empty():
 		_vault_query_result["obstacle_detected"] = false
@@ -130,6 +132,8 @@ func _get_vault_and_malt_query_results() -> void:
 func _get_ledge_climb_query_results() -> void:
 	if not enable_ledge_climb:
 		return
+	if not player_character:
+		return
 
 	var space := player_character.get_world_3d().direct_space_state
 	var forward := -player_character.global_transform.basis.z.normalized()
@@ -138,7 +142,7 @@ func _get_ledge_climb_query_results() -> void:
 	# Ledge Climb Detection Ray
 	var fwd_ray_from: Vector3 = origin + Vector3.UP * player_height
 	var fwd_ray_to: Vector3 = fwd_ray_from + forward * (ledge_detection_distance + player_width)
-	var fwd_ray_query_parameter = PhysicsRayQueryParameters3D.create(fwd_ray_from, fwd_ray_to,collision_layers_to_check,[player_character.get_rid()])
+	var fwd_ray_query_parameter = PhysicsRayQueryParameters3D.create(fwd_ray_from, fwd_ray_to, collision_layers_to_check, [player_character.get_rid()])
 	var fwd_result: Dictionary = space.intersect_ray(fwd_ray_query_parameter)
 	if fwd_result.is_empty():
 		_climb_query_result["ledge_detected"] = false
@@ -152,7 +156,7 @@ func _get_ledge_climb_query_results() -> void:
 	var nudge: Vector3 = forward * 0.05
 	var ledge_top_ray_from: Vector3 = fwd_result["position"] + nudge + Vector3.UP * max_climb_height
 	var ledge_top_ray_to: Vector3 = fwd_result["position"] + nudge - Vector3.UP * 0.5
-	var ledge_top_ray_query_parameter = PhysicsRayQueryParameters3D.create(ledge_top_ray_from, ledge_top_ray_to,collision_layers_to_check,[player_character.get_rid()])
+	var ledge_top_ray_query_parameter = PhysicsRayQueryParameters3D.create(ledge_top_ray_from, ledge_top_ray_to, collision_layers_to_check, [player_character.get_rid()])
 	var ledge_top_result: Dictionary = space.intersect_ray(ledge_top_ray_query_parameter)
 	if ledge_top_result.is_empty():
 		_climb_query_result["ledge_top_point_at_contact"] = fwd_result["position"] + Vector3.UP * 0.2
@@ -166,7 +170,7 @@ func _get_ledge_climb_query_results() -> void:
 	var landing_ray_from: Vector3 = fwd_result["position"] + forward * landing_depth
 	landing_ray_from.y = ledge_surface_y + 1.0
 	var landing_ray_to: Vector3 = landing_ray_from - Vector3.UP * 1.5
-	var landing_ray_query_parameter = PhysicsRayQueryParameters3D.create(landing_ray_from, landing_ray_to,collision_layers_to_check,[player_character.get_rid()])
+	var landing_ray_query_parameter = PhysicsRayQueryParameters3D.create(landing_ray_from, landing_ray_to, collision_layers_to_check, [player_character.get_rid()])
 	var landing_result: Dictionary = space.intersect_ray(landing_ray_query_parameter)
 	if landing_result.is_empty():
 		_climb_query_result["landing_position"] = Vector3(landing_ray_from.x, ledge_surface_y, landing_ray_from.z)
@@ -174,15 +178,15 @@ func _get_ledge_climb_query_results() -> void:
 		_climb_query_result["landing_position"] = landing_result["position"]
 
 	
-func _check_which_action_can_be_performed(vault_query_result:Dictionary, climb_query_result:Dictionary) -> ParkourAction:
+func _check_which_action_can_be_performed(vault_query_result: Dictionary, climb_query_result: Dictionary) -> ParkourAction:
 	# Climbing takes priority over vaulting
 	if climb_query_result["ledge_detected"]:
 		# check if there is any obstacle for climbing
 		# Test move character by first lifting the character to landing height and translating to landing position
-		var start_transform = player_character.global_transform 
+		var start_transform = player_character.global_transform
 		start_transform.origin.y = climb_query_result["landing_position"].y + 0.01 # small buffer of 0.01
-		var motion:Vector3 = climb_query_result["landing_position"] - start_transform.origin
-		if not player_character.test_move(start_transform,motion):
+		var motion: Vector3 = climb_query_result["landing_position"] - start_transform.origin
+		if not player_character.test_move(start_transform, motion):
 			return ParkourAction.CLIMB
 	
 	if vault_query_result["obstacle_detected"]:
@@ -200,20 +204,20 @@ func _check_which_action_can_be_performed(vault_query_result:Dictionary, climb_q
 	
 	return ParkourAction.NONE
 	
-func _perfrom_vault_or_malt(player_info:PlayerInfo) -> void:
+func _perfrom_vault_or_malt(player_info: PlayerInfo) -> void:
 	_is_executing = true
 	player_character._toggle_to_crouch_collider()
-	var offset:Vector3 = Vector3(0,player_height/2,0)
-	var peak_position:Vector3 = _vault_query_result["obstacle_top_position_at_contact"] + offset
-	var landing_position:Vector3 = _vault_query_result["landing_position"]
+	var offset: Vector3 = Vector3(0, player_height / 2, 0)
+	var peak_position: Vector3 = _vault_query_result["obstacle_top_position_at_contact"] + offset
+	var landing_position: Vector3 = _vault_query_result["landing_position"]
 	if landing_position.y > _vault_query_result["obstacle_top_position_at_malt_depth"].y:
-		landing_position = _vault_query_result["obstacle_top_position_at_malt_depth"] + Vector3(0,0.1,0)
+		landing_position = _vault_query_result["obstacle_top_position_at_malt_depth"] + Vector3(0, 0.1, 0)
 	var tween := player_character.create_tween().set_parallel(false)
 	var cam_tween := player_character.create_tween().set_parallel(false)
 	var base_neck_y := player_character.player_neck.position.y
 	# tween.tween_property(player_character, "global_position", peak_position, vault_time)\
 	# 	.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tween.tween_property(player_character, "global_position", landing_position, vault_time)\
+	tween.tween_property(player_character, "global_position", landing_position, vault_time) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	# Quick dip
 	cam_tween.tween_property(player_character.player_neck, "position:y", base_neck_y - 0.1, vault_time * 0.3)
@@ -262,18 +266,18 @@ func _perform_impulse_vault(player_info: PlayerInfo) -> void:
 
 	_is_executing = false
 
-func _perform_climb(player_info:PlayerInfo) -> void:
+func _perform_climb(player_info: PlayerInfo) -> void:
 	_is_executing = true
-	var offset:Vector3 = Vector3(0,player_height/2,0)
-	var peak_position:Vector3 = _climb_query_result["ledge_top_point_at_contact"] + offset
-	var landing_position:Vector3 = _climb_query_result["landing_position"]
+	var offset: Vector3 = Vector3(0, player_height / 2, 0)
+	var peak_position: Vector3 = _climb_query_result["ledge_top_point_at_contact"] + offset
+	var landing_position: Vector3 = _climb_query_result["landing_position"]
 	
 	var tween := player_character.create_tween().set_parallel(false)
 	var cam_tween := player_character.create_tween().set_parallel(false)
 	var base_neck_y := player_character.player_neck.position.y
-	tween.tween_property(player_character, "global_position", peak_position, climb_time * 0.6)\
+	tween.tween_property(player_character, "global_position", peak_position, climb_time * 0.6) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween.tween_property(player_character, "global_position", landing_position, climb_time * 0.4)\
+	tween.tween_property(player_character, "global_position", landing_position, climb_time * 0.4) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	# Pronounced camera pitch/pull for climb exertion
 	cam_tween.tween_property(player_character.player_neck, "position:y", base_neck_y - 0.22, climb_time * 0.5)

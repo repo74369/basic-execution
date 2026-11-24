@@ -1,10 +1,10 @@
 class_name AirMovementState
 extends MovementState
 
-@export var air_control:float = 2
+@export var air_control: float = 2
 @export var air_control_speed: float = 5
-@export var double_jump_thrust_force:float = 10.0
-@export var custom_double_jump_speed:float = 10.0
+@export var double_jump_thrust_force: float = 10.0
+@export var custom_double_jump_speed: float = 10.0
 
 var _air_time: float = 0
 
@@ -17,10 +17,13 @@ func _can_exit(_player_info: PlayerInfo) -> bool:
 func _on_enter(player_info: PlayerInfo) -> void:
 	_air_time = 0
 	player_info.is_in_air_state = true
+	if player_character:
+		player_character.floor_snap_length = 0
 
 func _on_exit(player_info: PlayerInfo) -> void:
 	player_info.jump_count = 0
 	player_info.is_in_air_state = false
+	player_character.floor_snap_length = player_character.max_step_height
 
 func _physics_update(delta: float, player_info: PlayerInfo) -> void:
 	_air_time += delta
@@ -33,7 +36,7 @@ func _physics_update(delta: float, player_info: PlayerInfo) -> void:
 		player_info.velocity.y += extra_gravity * delta
 
 	var cam_basis = player_character.global_transform.basis
-	var dir = (cam_basis.x * player_info.input_dir.x - cam_basis.z *player_info.input_dir.y)
+	var dir = (cam_basis.x * player_info.input_dir.x - cam_basis.z * player_info.input_dir.y)
 	var input_dir = dir.normalized()
 	# dir.y = player.velocity.y
 	var target_velocity = player_info.velocity # Get initial velocity so that momentum is preserved
@@ -52,4 +55,4 @@ func _physics_update(delta: float, player_info: PlayerInfo) -> void:
 		if custom_double_jump_speed != 0:
 			jump_speed = custom_double_jump_speed
 		player_info.velocity.y += jump_speed
-	super._physics_update(delta,player_info)
+	super._physics_update(delta, player_info)
