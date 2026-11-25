@@ -60,14 +60,19 @@ func _can_exit(_player_info: PlayerInfo) -> bool:
 
 func _on_enter(player_info: PlayerInfo) -> void:
 	if _current_action == ParkourAction.VAULT:
+		player_info.is_vaulting = true
 		if use_impulse_vault:
 			_perform_impulse_vault(player_info)
 		else:
 			_perfrom_vault_or_malt(player_info)
+
 	elif _current_action == ParkourAction.CLIMB:
+		player_info.is_climbing = true
 		_perform_climb(player_info)
 
 func _on_exit(player_info: PlayerInfo) -> void:
+	player_info.is_vaulting = false
+	player_info.is_climbing = false
 	pass
 
 func _physics_update(delta: float, player_info: PlayerInfo) -> void:

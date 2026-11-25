@@ -39,6 +39,12 @@ size = Vector3(1, 1.2, 0.2)
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_hrq6i"]
 points = PackedVector3Array(-0.5, -0.6, -0.1, -0.5, -0.6, 0.1, -0.5, 0.6, -0.1, 0.5, -0.6, -0.1, 0.5, -0.6, 0.1, -0.5, 0.6, 0.1, 0.5, 0.6, -0.1, 0.5, 0.6, 0.1)
 
+[sub_resource type="BoxMesh" id="BoxMesh_65205"]
+size = Vector3(30, 5, 0.2)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_s3n3v"]
+points = PackedVector3Array(14.999998, 2.5, 0.1, 14.999998, 2.5, -0.1, -15, 2.5, 0.1, 14.999998, -2.5, 0.1, 14.999998, -2.5, -0.1, -15, 2.5, -0.1, -15, -2.5, 0.1, -15, -2.5, -0.1)
+
 [node name="test" unique_id=522572143 instance=ExtResource("1_syuel")]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." index="0" unique_id=1803748259]
@@ -114,3 +120,12 @@ mesh = SubResource("BoxMesh_hrq6i")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D7/StaticBody3D" index="0" unique_id=672717886]
 shape = SubResource("ConvexPolygonShape3D_hrq6i")
+
+[node name="MeshInstance3D8" type="MeshInstance3D" parent="." index="19" unique_id=887735330]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.331068, 3.700001, -11.864524)
+mesh = SubResource("BoxMesh_65205")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D8" index="0" unique_id=594541767]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D8/StaticBody3D" index="0" unique_id=2047766443]
+shape = SubResource("ConvexPolygonShape3D_s3n3v")

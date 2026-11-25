@@ -12,6 +12,7 @@
 [ext_resource type="Script" uid="uid://de6khqk8nt53v" path="res://framework/player/player_components/movement_states/state_slide.gd" id="9_86omr"]
 [ext_resource type="Script" uid="uid://dgqbiu1g4apia" path="res://framework/player/player_components/camera_effects_component.gd" id="10_86omr"]
 [ext_resource type="Script" uid="uid://doetm16ucoh2s" path="res://framework/player/player_components/movement_states/state_vault_malt_climb.gd" id="10_pxqg2"]
+[ext_resource type="Script" uid="uid://cka63ob31vsmn" path="res://framework/player/player_components/movement_states/state_wall_run.gd" id="11_mwyeb"]
 
 [sub_resource type="Resource" id="Resource_dmsdt"]
 script = ExtResource("2_bjjt8")
@@ -77,6 +78,11 @@ script = ExtResource("10_pxqg2")
 use_impulse_vault = false
 priority = 30
 metadata/_custom_type_script = "uid://doetm16ucoh2s"
+
+[node name="WallRunState" type="Node" parent="MovementController" unique_id=101090512]
+script = ExtResource("11_mwyeb")
+priority = 40
+metadata/_custom_type_script = "uid://cka63ob31vsmn"
 
 [node name="LookController" type="Node" parent="." unique_id=1617791829]
 script = ExtResource("4_3ynlm")

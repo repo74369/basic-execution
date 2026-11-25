@@ -36,6 +36,7 @@ func initialize_default_player_action_variables() -> void:
 	player_info.is_sliding = false
 	player_info.is_dashing = false
 	player_info.is_in_air_state = false
+	player_info.is_wall_running = false
 	
 
 func _physics_process(delta: float) -> void:

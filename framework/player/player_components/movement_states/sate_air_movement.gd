@@ -3,7 +3,7 @@ extends MovementState
 
 @export var air_control: float = 2
 @export var air_control_speed: float = 5
-@export var double_jump_thrust_force: float = 10.0
+@export_range(0,1,0.1) var horizontal_force_influence = 1.0
 @export var custom_double_jump_speed: float = 10.0
 
 var _air_time: float = 0
@@ -54,5 +54,9 @@ func _physics_update(delta: float, player_info: PlayerInfo) -> void:
 		var jump_speed = player_info.jump_speed
 		if custom_double_jump_speed != 0:
 			jump_speed = custom_double_jump_speed
-		player_info.velocity.y += jump_speed
+		var forward = -player_character.transform.basis.z.normalized()
+		# Jump preserving speed on the direction player is facing based on the influence
+		var horizontal_velocity = forward * horizontal_force_influence * player_info.current_speed
+		var final_jump_velocity = horizontal_velocity + Vector3(0, jump_speed, 0)
+		player_info.velocity = final_jump_velocity
 	super._physics_update(delta, player_info)

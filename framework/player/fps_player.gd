@@ -144,7 +144,7 @@ func update_camera_step_smoothing(delta) -> void:
 		return
 	
 	# Target eye height depends on whether crouching or standing
-	var target_eye_height = crouch_eye_height if player_info.is_crouching else standing_eye_height
+	var target_eye_height = crouch_eye_height if (player_info.is_crouching or player_info.is_sliding) else standing_eye_height
 	
 	if not is_equal_approx(player_neck.position.y, target_eye_height):
 		# Smoothly decay the offset back to target height

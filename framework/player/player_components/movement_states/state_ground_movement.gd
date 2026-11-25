@@ -8,7 +8,9 @@ func _can_enter(player_info: PlayerInfo) -> bool:
 func _can_exit(_player_info: PlayerInfo) -> bool:
 	return true
 
-func _on_enter(_player_info: PlayerInfo) -> void:
+func _on_enter(player_info: PlayerInfo) -> void:
+	if player_info:
+		player_info.last_wall_run_normal = Vector3.ZERO
 	if player_character:
 		player_character.floor_snap_length = player_character.max_step_height
 

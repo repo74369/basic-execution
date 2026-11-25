@@ -39,6 +39,7 @@ var floor_normal: Vector3
 # Writable State Variables
 var velocity: Vector3
 var jump_count: int
+var last_wall_run_normal: Vector3
 
 # Player Action Variables
 var is_firing: bool
@@ -49,3 +50,4 @@ var is_vaulting: bool
 var is_climbing: bool
 var is_sliding: bool
 var is_dashing: bool
+var is_wall_running: bool
