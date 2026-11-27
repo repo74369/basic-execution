@@ -26,6 +26,10 @@ DebugConsole="*uid://cnhu423hy4rwm"
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[dotnet]
+
+project/assembly_name="Basic Execution"
+
 [input]
 
 move_left={
